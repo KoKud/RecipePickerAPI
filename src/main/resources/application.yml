@@ -1,0 +1,13 @@
+spring:
+  data:
+    mongodb:
+      host: 'localhost'
+      port : 27017
+      database : 'test'
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken%40system.gserviceaccount.com'
+          issuer-uri: 'https://securetoken.google.com/recipepickerauthtest'
+          audiences: 'recipepickerauthtest'
