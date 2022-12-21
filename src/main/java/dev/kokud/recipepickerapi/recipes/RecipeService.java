@@ -19,12 +19,11 @@ class RecipeService {
         return Mono.just(recipeProjection);
     }
 
-    Flux<RecipeProjection> getRecipes(String name) {
-        return recipeRepository.findAll(name).map(RecipeProjection::new);
-    }
-
-    Flux<RecipeProjection> getMyRecipes(String user){
-        return recipeRepository.findByCreatorId(user).map(RecipeProjection::new);
+    Flux<RecipeProjection> getRecipesPaged(String name, int page, int size) {
+        return recipeRepository.findAll(name)
+                .skip(page * size)
+                .take(size)
+                .map(RecipeProjection::new);
     }
 
     Flux<RecipeProjection> getMyRecipesPaged(String user, int page, int size){

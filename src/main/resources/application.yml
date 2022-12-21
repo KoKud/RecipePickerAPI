@@ -9,5 +9,5 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken%40system.gserviceaccount.com'
-          issuer-uri: 'https://securetoken.google.com/recipepickerauthtest'
-          audiences: 'recipepickerauthtest'
+          issuer-uri: 'https://securetoken.google.com/recipespickerdebug'
+          audiences: 'recipespickerdebug'

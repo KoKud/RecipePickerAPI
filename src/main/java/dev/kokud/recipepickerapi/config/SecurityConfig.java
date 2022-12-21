@@ -6,7 +6,7 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
-class SecurityConfiguration {
+class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http){
         http.authorizeExchange().anyExchange().authenticated().and().oauth2ResourceServer().jwt();
