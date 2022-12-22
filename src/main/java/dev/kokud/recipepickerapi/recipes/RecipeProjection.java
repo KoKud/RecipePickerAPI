@@ -2,17 +2,14 @@ package dev.kokud.recipepickerapi.recipes;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 @Data
 @NoArgsConstructor
 class RecipeProjection {
+    private String id;
     @NotBlank(message = "Title is required")
     private String title;
     private String description;
@@ -22,6 +19,7 @@ class RecipeProjection {
     private String imageUri;
 
     public RecipeProjection(Recipe recipe) {
+        this.id = recipe.getId();
         this.title = recipe.getTitle();
         this.description = recipe.getDescription();
         this.ingredients = recipe.getIngredients();

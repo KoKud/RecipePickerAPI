@@ -16,4 +16,12 @@ interface RecipeRepository extends ReactiveMongoRepository<Recipe, String> {
             "        {shared:false}" +
             "]}]}")
     Flux<Recipe> findAll(@Param("id") String creatorId);
+
+    @Query("{$or: [{creatorId: ?0 }," +
+            "   {$and: [" +
+            "        {\"ingredients.id\" : ?1}," +
+            "        {banned:false}," +
+            "        {shared:false}" +
+            "]}]}")
+    Flux<Recipe> findByIngredientId(String id, String user);
 }

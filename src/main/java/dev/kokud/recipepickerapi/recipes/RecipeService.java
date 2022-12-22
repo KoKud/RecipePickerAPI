@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.Optional;
+
 @Service
 class RecipeService {
     private final RecipeRepository recipeRepository;
@@ -12,22 +15,30 @@ class RecipeService {
         this.recipeRepository = recipeRepository;
     }
 
-    Mono<RecipeProjection> createRecipe(RecipeProjection recipeProjection, String user){
+    Mono<RecipeProjection> createRecipe(RecipeProjection recipeProjection, String user) {
         var recipe = recipeProjection.toRecipe();
         recipe.setCreatorId(user);
-        recipeRepository.insert(recipe).subscribe();
-        return Mono.just(recipeProjection);
+        return recipeRepository.insert(recipe).map(RecipeProjection::new);
     }
 
-    Flux<RecipeProjection> getRecipesPaged(String name, int page, int size) {
+    Flux<RecipeProjection> getRecipesPaged(String name, RecipeCategory category, int page, int size) {
         return recipeRepository.findAll(name)
-                .skip(page * size)
+                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .skip((long) page * size).take(size).map(RecipeProjection::new);
+
+    }
+
+    Flux<RecipeProjection> getMyRecipesPaged(String name, RecipeCategory category, int page, int size) {
+        return recipeRepository.findByCreatorId(name)
+                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .skip((long) page * size)
                 .take(size)
                 .map(RecipeProjection::new);
     }
 
-    Flux<RecipeProjection> getMyRecipesPaged(String user, int page, int size){
-        return recipeRepository.findByCreatorId(user)
+    Flux<RecipeProjection> getRecipesPagedByIngredientId(String id, String name, RecipeCategory category, int page, int size) {
+        return recipeRepository.findByIngredientId(id, name)
+                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
                 .skip((long) page * size)
                 .take(size)
                 .map(RecipeProjection::new);

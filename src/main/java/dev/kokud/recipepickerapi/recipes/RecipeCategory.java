@@ -1,6 +1,8 @@
 package dev.kokud.recipepickerapi.recipes;
 
 enum RecipeCategory {
+    ALL,
+    FAVOURITE,
     BREAKFAST,
     LUNCH,
     DINNER,
@@ -8,4 +10,5 @@ enum RecipeCategory {
     SNACK,
     DRINK,
     OTHER
+
 }
