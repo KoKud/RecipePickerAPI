@@ -17,7 +17,7 @@ class Recipe {
     private String title;
     private String description;
     private String creatorId;
-    private List<Map<String, ?>> ingredients;
+    private List<Ingredient> ingredients;
     private List<String> directions;
     private List<RecipeCategory> categories;
     private String imageUri;

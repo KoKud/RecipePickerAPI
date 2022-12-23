@@ -36,8 +36,8 @@ class RecipeService {
                 .map(RecipeProjection::new);
     }
 
-    Flux<RecipeProjection> getRecipesPagedByIngredientId(String id, String name, RecipeCategory category, int page, int size) {
-        return recipeRepository.findByIngredientId(id, name)
+    Flux<RecipeProjection> getRecipesPagedByIngredientId(String name, String ingredientId, RecipeCategory category, int page, int size) {
+        return recipeRepository.findByIngredients_Id(name, ingredientId)
                 .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
                 .skip((long) page * size)
                 .take(size)

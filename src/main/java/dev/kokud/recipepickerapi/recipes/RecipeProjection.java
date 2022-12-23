@@ -13,7 +13,7 @@ class RecipeProjection {
     @NotBlank(message = "Title is required")
     private String title;
     private String description;
-    private List<Map<String, ?>> ingredients;
+    private List<Ingredient> ingredients;
     private List<String> directions;
     private List<RecipeCategory> categories;
     private String imageUri;

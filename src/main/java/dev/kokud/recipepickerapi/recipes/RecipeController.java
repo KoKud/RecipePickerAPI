@@ -29,7 +29,6 @@ class RecipeController {
     }
     @PostMapping(value = "/upload-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<String> handleFileUpload(@PathVariable String id, @RequestPart("file") FilePart file) {
-        System.out.println(file.filename());
         return gridFsTemplate.store(file.content(), file.filename())
                 .map(id1 -> id1.toHexString());
     }
@@ -48,9 +47,9 @@ class RecipeController {
     }
 
     @GetMapping("recipes/{id}")
-    Flux<RecipeProjection> getPagedRecipesByIngredientId(@PathVariable String id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "ALL") RecipeCategory category) {
+    Flux<RecipeProjection> getPagedRecipesByIngredientId(@PathVariable("id") String ingredientId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "ALL") RecipeCategory category) {
         var user = ReactiveSecurityContextHolder.getContext().map(ctx -> ctx.getAuthentication());
-        return user.map(u -> u.getName()).flatMapMany(name -> recipeService.getRecipesPagedByIngredientId(id, name, category, page, size));
+        return user.map(u -> u.getName()).flatMapMany(name -> recipeService.getRecipesPagedByIngredientId(name, ingredientId, category, page, size));
     }
 
     @GetMapping("/recipes/myRecipes")
