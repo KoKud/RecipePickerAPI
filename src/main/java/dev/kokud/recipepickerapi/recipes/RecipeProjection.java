@@ -1,18 +1,20 @@
 package dev.kokud.recipepickerapi.recipes;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @NoArgsConstructor
 class RecipeProjection {
+    @Null
     private String id;
     @NotBlank(message = "Title is required")
     private String title;
     private String description;
+    private String creatorId;
     private List<Ingredient> ingredients;
     private List<String> directions;
     private List<RecipeCategory> categories;
@@ -22,6 +24,7 @@ class RecipeProjection {
         this.id = recipe.getId();
         this.title = recipe.getTitle();
         this.description = recipe.getDescription();
+        this.creatorId = recipe.getCreatorId();
         this.ingredients = recipe.getIngredients();
         this.directions = recipe.getDirections();
         this.categories = recipe.getCategories();

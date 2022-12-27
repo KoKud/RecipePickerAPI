@@ -43,4 +43,13 @@ class RecipeService {
                 .take(size)
                 .map(RecipeProjection::new);
     }
+
+    Mono<RecipeProjection> getRecipeById(String recipeId) {
+        return recipeRepository.findById(recipeId)
+                .map(RecipeProjection::new);
+    }
+
+    Mono<? extends Void> deleteRecipe(String name, String id) {
+        return recipeRepository.findById(id).filter(recipe -> recipe.getCreatorId().equals(name)).flatMap(recipeRepository::delete);
+    }
 }
