@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 class Ingredient {
     private String id;
+    private String name;
     private Integer amount;
     private Integer type;
     private Boolean optional;

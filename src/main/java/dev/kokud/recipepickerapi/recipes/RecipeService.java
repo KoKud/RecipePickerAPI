@@ -52,4 +52,20 @@ class RecipeService {
     Mono<? extends Void> deleteRecipe(String name, String id) {
         return recipeRepository.findById(id).filter(recipe -> recipe.getCreatorId().equals(name)).flatMap(recipeRepository::delete);
     }
+
+    public Mono<RecipeProjection> updateRecipe(String id, RecipeProjection recipe, String name) {
+        return recipeRepository.findById(id)
+                .filter(recipe1 -> recipe1.getCreatorId().equals(name))
+                .map(recipe1 -> {
+                    recipe1.setTitle(recipe.getTitle());
+                    recipe1.setDescription(recipe.getDescription());
+                    recipe1.setIngredients(recipe.getIngredients());
+                    recipe1.setDirections(recipe.getDirections());
+                    recipe1.setCategories(recipe.getCategories());
+                    recipe1.setImageUri(recipe.getImageUri());
+                    return recipe1;
+                })
+                .flatMap(recipeRepository::save)
+                .map(RecipeProjection::new);
+    }
 }

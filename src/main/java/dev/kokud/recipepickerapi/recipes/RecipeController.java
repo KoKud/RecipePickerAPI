@@ -31,6 +31,13 @@ class RecipeController {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMap(name -> recipeService.createRecipe(recipe, name));
     }
+
+    @PutMapping("/recipes/{id}")
+    Mono<RecipeProjection> updateRecipe(@PathVariable String id, @RequestBody @Valid RecipeProjection recipe) {
+        var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
+        return user.map(Principal::getName).flatMap(name -> recipeService.updateRecipe(id, recipe, name));
+    }
+
     @PostMapping(value = "/upload-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<String> handleFileUpload(@RequestPart("file") FilePart file) {
         return gridFsTemplate.store(file.content(), file.filename())
