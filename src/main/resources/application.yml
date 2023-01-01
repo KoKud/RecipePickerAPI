@@ -1,9 +1,13 @@
 spring:
   data:
     mongodb:
-      host: 'localhost'
-      port : 27017
-      database : 'test'
+      host: ${MONGOHOST}
+      port : ${MONGOPORT}
+      database : ${MONGODB}
+      username: ${MONGOUSER}
+      password: ${MONGOPASSWORD}
+      authentication-database: admin
+
   security:
     oauth2:
       resourceserver:
