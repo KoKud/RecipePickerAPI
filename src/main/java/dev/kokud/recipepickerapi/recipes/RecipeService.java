@@ -1,5 +1,6 @@
 package dev.kokud.recipepickerapi.recipes;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -8,12 +9,9 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 class RecipeService {
     private final RecipeRepository recipeRepository;
-
-    RecipeService(RecipeRepository recipeRepository) {
-        this.recipeRepository = recipeRepository;
-    }
 
     Mono<RecipeProjection> createRecipe(RecipeProjection recipeProjection, String user) {
         var recipe = recipeProjection.toRecipe();
