@@ -21,6 +21,12 @@ class UserController {
         return loggedUser.map(Principal::getName).flatMap(id -> userService.registerUser(id, user));
     }
 
+    @PutMapping("/me")
+    Mono<UserProjection> updateUser(@RequestBody @Valid UserProjection user) {
+        var loggedUser = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
+        return loggedUser.map(Principal::getName).flatMap(id -> userService.updateUser(id, user));
+    }
+
     @GetMapping("/me")
     Mono<UserProjection> getLoggedUser() {
         var loggedUser = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);

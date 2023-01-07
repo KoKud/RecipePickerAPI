@@ -15,7 +15,7 @@ class UserProjection {
     @Email(message = "Email should be valid")
     private String email;
     private String username;
-    private String imageUrl;   //used for Google account image
+    private String imageUrl;
     @Null
     private Date banned;
     private Boolean autoShare;
