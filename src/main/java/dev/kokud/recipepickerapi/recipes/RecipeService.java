@@ -35,7 +35,7 @@ class RecipeService {
     }
 
     Flux<RecipeProjection> getRecipesPagedByIngredientId(String name, String ingredientId, RecipeCategory category, int page, int size) {
-        return recipeRepository.findByIngredients_Id(name, ingredientId)
+        return recipeRepository.findByIngredientsId(name, ingredientId)
                 .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
                 .skip((long) page * size)
                 .take(size)
@@ -47,7 +47,7 @@ class RecipeService {
                 .map(RecipeProjection::new);
     }
 
-    Mono<? extends Void> deleteRecipe(String name, String id) {
+    Mono<Void> deleteRecipe(String name, String id) {
         return recipeRepository.findById(id).filter(recipe -> recipe.getCreatorId().equals(name)).flatMap(recipeRepository::delete);
     }
 

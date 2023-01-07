@@ -22,5 +22,5 @@ interface RecipeRepository extends ReactiveMongoRepository<Recipe, String> {
             "       {shared:false}]}," +
             "       {creatorId: ?0 }]}" +
             "]}")
-    Flux<Recipe> findByIngredients_Id(String name,String id);
+    Flux<Recipe> findByIngredientsId(String name, String id);
 }
