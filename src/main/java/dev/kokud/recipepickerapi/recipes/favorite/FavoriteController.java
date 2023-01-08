@@ -22,7 +22,7 @@ class FavoriteController {
     }
 
     @GetMapping
-    Flux<String> getFavoriteRecipes() {
+    Flux<FavoriteProjection> getFavoriteRecipes() {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMapMany(favoriteService::getFavoriteRecipes);
     }

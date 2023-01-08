@@ -11,6 +11,6 @@ class Ingredient {
     private String id;
     private String name;
     private Integer amount;
-    private Integer type;
+    private IngredientCategory type;
     private Boolean optional;
 }
