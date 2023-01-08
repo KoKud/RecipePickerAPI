@@ -29,4 +29,9 @@ class IngredientController {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMapMany(name -> ingredientService.getIngredientsPaged(name, category, search, page, size));
     }
+
+    @GetMapping("{id}")
+    Mono<IngredientProjection> getIngredientById(@PathVariable("id") String ingredientId) {
+        return ingredientService.getIngredientById(ingredientId);
+    }
 }

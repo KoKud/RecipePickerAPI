@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-class FavoriteService {
+public class FavoriteService {
 
     private final FavoriteRecipeRepository favoriteRecipeRepository;
 

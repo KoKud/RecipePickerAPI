@@ -32,4 +32,9 @@ class IngredientService {
                 .filter(ingredient -> ingredient.getName().toLowerCase().contains(search.toLowerCase()))
                 .skip((long) page * size).take(size).map(IngredientProjection::new);
     }
+
+    public Mono<IngredientProjection> getIngredientById(String ingredientId) {
+        return ingredientRepository.findById(ingredientId)
+                .map(IngredientProjection::new);
+    }
 }

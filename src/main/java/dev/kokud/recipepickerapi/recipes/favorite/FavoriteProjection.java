@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-class FavoriteProjection {
+public class FavoriteProjection {
     private String recipeId;
     public FavoriteProjection(Favorite favorite) {
         this.recipeId = favorite.getRecipeId();
