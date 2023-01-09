@@ -25,7 +25,11 @@ class IngredientController {
     }
 
     @GetMapping
-    Flux<IngredientProjection> getPagedIngredients(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "ALL") IngredientCategory category, @RequestParam(defaultValue = "") String search) {
+    Flux<IngredientProjection> getPagedIngredients(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "ALL") IngredientCategory category,
+            @RequestParam(defaultValue = "") String search) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMapMany(name -> ingredientService.getIngredientsPaged(name, category, search, page, size));
     }

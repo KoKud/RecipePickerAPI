@@ -1,5 +1,6 @@
 package dev.kokud.recipepickerapi.recipes;
 
+import dev.kokud.recipepickerapi.ingredients.owned.IngredientCategory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
