@@ -1,5 +1,6 @@
 package dev.kokud.recipepickerapi.recipes;
 
+import dev.kokud.recipepickerapi.ingredients.owned.OwnedIngredientService;
 import dev.kokud.recipepickerapi.recipes.favorite.FavoriteProjection;
 import dev.kokud.recipepickerapi.recipes.favorite.FavoriteService;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -16,6 +17,7 @@ import java.util.Optional;
 class RecipeService {
     private final RecipeRepository recipeRepository;
     private final FavoriteService favoriteService;
+    private final OwnedIngredientService ownedIngredientService;
 
     Mono<RecipeProjection> createRecipe(RecipeProjection recipeProjection, String user) {
         var recipe = recipeProjection.toRecipe();
@@ -83,7 +85,30 @@ class RecipeService {
                 .map(RecipeProjection::new);
     }
 
-    public Flux<RecipeProjection> getRecipesByIds(String[] recipeIds) {
-        return recipeRepository.findAllById(List.of(recipeIds)).map(RecipeProjection::new);
+    public Flux<RecipeProjection> getOwnedRecipesPaged(String name, RecipeCategory category, int page, int size) {
+        return ownedIngredientService.getOwnedIngredients(name)
+                .map(ownedIngredient ->
+                        Map.entry(ownedIngredient.getIngredientId(), switch (ownedIngredient.getType()) {
+                            case G -> ownedIngredient.getAmount();
+                            case KG -> ownedIngredient.getAmount() * 1000;
+                            case TEASPOON -> ownedIngredient.getAmount() * 7;
+                            case TABLESPOON -> ownedIngredient.getAmount() * 15;
+                            case MUG -> ownedIngredient.getAmount() * 250;
+                            case PINCH -> ownedIngredient.getAmount() * 0.5;
+                        })
+                ).collectMap(Map.Entry::getKey, Map.Entry::getValue).flatMapMany(ownedIngredients -> recipeRepository.findAll(name)
+                        .filter(recipe -> {
+                            var recipeIngredients = recipe.getIngredients();
+                            if (recipeIngredients == null) return true;
+                            for (var recipeIngredient : recipeIngredients) {
+                                var ownedIngredient = ownedIngredients.get(recipeIngredient.getId());
+                                if (ownedIngredient == null) return false;
+                                if (ownedIngredient < recipeIngredient.getAmount()) return false;
+                            }
+                            return true;
+                        }))
+                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .skip((long) page * size).take(size)
+                .map(RecipeProjection::new);
     }
 }
