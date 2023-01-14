@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +17,6 @@ class User {
     private String email;
     private String imageUri;
     private String imageUrl;   //used for Google account image
-    private Date banned;
+    private LocalDateTime banned;
     private Boolean autoShare;
 }

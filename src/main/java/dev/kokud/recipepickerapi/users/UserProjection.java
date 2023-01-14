@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Null;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +17,7 @@ class UserProjection {
     private String username;
     private String imageUrl;
     @Null
-    private Date banned;
+    private LocalDateTime banned;
     private Boolean autoShare;
 
     public UserProjection(User user, String serverUrl) {
