@@ -7,7 +7,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,7 +37,7 @@ class IngredientService {
                 .map(IngredientProjection::new);
 
         return ingredientRepository.findAll(name)
-                .filter(ingredient -> category == IngredientCategory.ALL || Optional.ofNullable(ingredient.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .filter(ingredient -> category == IngredientCategory.ALL || Optional.ofNullable(ingredient.getCategories()).orElse(List.of()).contains(category))
                 .filter(ingredient -> ingredient.getName().toLowerCase().contains(search.toLowerCase()))
                 .skip((long) page * size).take(size).map(IngredientProjection::new);
     }

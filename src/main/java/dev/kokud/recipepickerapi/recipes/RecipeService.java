@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,7 +36,7 @@ class RecipeService {
                 .map(RecipeProjection::new);
 
         return recipeRepository.findAll(name)
-                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(List.of()).contains(category))
                 .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
                 .skip((long) page * size).take(size).map(RecipeProjection::new);
 
@@ -50,7 +50,7 @@ class RecipeService {
                 .skip((long) page * size).take(size).map(RecipeProjection::new);
 
         return recipeRepository.findByCreatorId(name)
-                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(List.of()).contains(category))
                 .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
                 .skip((long) page * size).take(size).map(RecipeProjection::new);
     }
@@ -62,7 +62,7 @@ class RecipeService {
                 .skip((long) page * size).take(size).map(RecipeProjection::new);
 
         return recipeRepository.findByIngredientsId(name, ingredientId)
-                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(List.of()).contains(category))
                 .skip((long) page * size).take(size).map(RecipeProjection::new);
     }
 
@@ -121,7 +121,7 @@ class RecipeService {
                             })
                             .filter(recipe -> favorites == null || favorites.contains(recipe.getId()));
                 })
-                .filter(recipe -> category == RecipeCategory.ALL || category == RecipeCategory.FAVOURITE || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .filter(recipe -> category == RecipeCategory.ALL || category == RecipeCategory.FAVOURITE || Optional.ofNullable(recipe.getCategories()).orElse(List.of()).contains(category))
                 .skip((long) page * size).take(size)
                 .map(RecipeProjection::new);
     }
