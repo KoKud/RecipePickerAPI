@@ -7,8 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -25,27 +27,31 @@ class RecipeService {
         return recipeRepository.insert(recipe).map(RecipeProjection::new);
     }
 
-    Flux<RecipeProjection> getRecipesPaged(String name, RecipeCategory category, int page, int size) {
+    Flux<RecipeProjection> getRecipesPaged(String name, RecipeCategory category, String search, int page, int size) {
         if (category == RecipeCategory.FAVOURITE) return favoriteService.getFavoriteRecipes(name)
                 .map(FavoriteProjection::getRecipeId)
                 .skip((long) page * size).take(size)
                 .collectList().flatMapMany(recipeRepository::findByIdIn)
+                .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
                 .map(RecipeProjection::new);
 
         return recipeRepository.findAll(name)
                 .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
                 .skip((long) page * size).take(size).map(RecipeProjection::new);
 
     }
 
-    Flux<RecipeProjection> getMyRecipesPaged(String name, RecipeCategory category, int page, int size) {
+    Flux<RecipeProjection> getMyRecipesPaged(String name, RecipeCategory category, String search, int page, int size) {
         if (category == RecipeCategory.FAVOURITE) return favoriteService.getFavoriteRecipes(name)
                 .map(FavoriteProjection::getRecipeId).collectList()
                 .flatMapMany(recipeId -> recipeRepository.findByIdInAndCreatorId(recipeId, name))
+                .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
                 .skip((long) page * size).take(size).map(RecipeProjection::new);
 
         return recipeRepository.findByCreatorId(name)
                 .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
                 .skip((long) page * size).take(size).map(RecipeProjection::new);
     }
 
@@ -96,18 +102,26 @@ class RecipeService {
                             case MUG -> ownedIngredient.getAmount() * 250;
                             case PINCH -> ownedIngredient.getAmount() * 0.5;
                         })
-                ).collectMap(Map.Entry::getKey, Map.Entry::getValue).flatMapMany(ownedIngredients -> recipeRepository.findAll(name)
-                        .filter(recipe -> {
-                            var recipeIngredients = recipe.getIngredients();
-                            if (recipeIngredients == null) return true;
-                            for (var recipeIngredient : recipeIngredients) {
-                                var ownedIngredient = ownedIngredients.get(recipeIngredient.getId());
-                                if (ownedIngredient == null) return false;
-                                if (ownedIngredient < recipeIngredient.getAmount()) return false;
-                            }
-                            return true;
-                        }))
-                .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
+                ).collectMap(Map.Entry::getKey, Map.Entry::getValue)
+                .publishOn(Schedulers.boundedElastic())
+                .flatMapMany(ownedIngredients -> {
+                    List<String> favorites = (category == RecipeCategory.FAVOURITE)
+                            ? favoriteService.getFavoriteRecipes(name).map(FavoriteProjection::getRecipeId).collectList().block()
+                            : null;
+                    return recipeRepository.findAll(name)
+                            .filter(recipe -> {
+                                var recipeIngredients = recipe.getIngredients();
+                                if (recipeIngredients == null) return true;
+                                for (var recipeIngredient : recipeIngredients) {
+                                    var ownedIngredient = ownedIngredients.get(recipeIngredient.getId());
+                                    if (ownedIngredient == null) return false;
+                                    if (ownedIngredient < recipeIngredient.getAmount()) return false;
+                                }
+                                return true;
+                            })
+                            .filter(recipe -> favorites == null || favorites.contains(recipe.getId()));
+                })
+                .filter(recipe -> category == RecipeCategory.ALL || category == RecipeCategory.FAVOURITE || Optional.ofNullable(recipe.getCategories()).orElse(new ArrayList<>()).contains(category))
                 .skip((long) page * size).take(size)
                 .map(RecipeProjection::new);
     }

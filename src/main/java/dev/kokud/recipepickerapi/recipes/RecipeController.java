@@ -39,9 +39,13 @@ class RecipeController {
     }
 
     @GetMapping
-    Flux<RecipeProjection> getPagedRecipes(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "ALL") RecipeCategory category) {
+    Flux<RecipeProjection> getPagedRecipes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "ALL") RecipeCategory category,
+            @RequestParam(defaultValue = "") String search) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
-        return user.map(Principal::getName).flatMapMany(name -> recipeService.getRecipesPaged(name, category , page, size));
+        return user.map(Principal::getName).flatMapMany(name -> recipeService.getRecipesPaged(name, category, search , page, size));
     }
 
     @GetMapping("{id}")
@@ -56,13 +60,20 @@ class RecipeController {
     }
 
     @GetMapping("myRecipes")
-    Flux<RecipeProjection> getMyRecipesPaged(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "ALL") RecipeCategory category) {
+    Flux<RecipeProjection> getMyRecipesPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "ALL") RecipeCategory category,
+            @RequestParam(defaultValue = "") String search) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
-        return user.map(Principal::getName).flatMapMany(name -> recipeService.getMyRecipesPaged(name, category, page, size));
+        return user.map(Principal::getName).flatMapMany(name -> recipeService.getMyRecipesPaged(name, category, search, page, size));
     }
 
     @GetMapping("/owned")
-    Flux<RecipeProjection> getOwnedRecipesPaged(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "ALL") RecipeCategory category) {
+    Flux<RecipeProjection> getOwnedRecipesPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "ALL") RecipeCategory category) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMapMany(name -> recipeService.getOwnedRecipesPaged(name, category, page, size));
     }
