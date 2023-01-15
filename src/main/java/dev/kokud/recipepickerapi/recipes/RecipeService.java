@@ -3,13 +3,14 @@ package dev.kokud.recipepickerapi.recipes;
 import dev.kokud.recipepickerapi.ingredients.owned.OwnedIngredientService;
 import dev.kokud.recipepickerapi.recipes.favorite.FavoriteProjection;
 import dev.kokud.recipepickerapi.recipes.favorite.FavoriteService;
+import dev.kokud.recipepickerapi.users.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,11 +21,20 @@ class RecipeService {
     private final RecipeRepository recipeRepository;
     private final FavoriteService favoriteService;
     private final OwnedIngredientService ownedIngredientService;
+    private final UserService userService;
 
     Mono<RecipeProjection> createRecipe(RecipeProjection recipeProjection, String user) {
         var recipe = recipeProjection.toRecipe();
-        recipe.setCreatorId(user);
-        return recipeRepository.insert(recipe).map(RecipeProjection::new);
+
+        return userService.getUser(user)
+                .map(userData ->
+                        !Optional.ofNullable(userData.getBanned()).orElse(LocalDateTime.now()).isAfter(LocalDateTime.now())
+                                && userData.getAutoShare())
+                .flatMap(autoShare -> {
+                    recipe.setCreatorId(user);
+                    recipe.setShared(autoShare);
+                    return recipeRepository.insert(recipe);
+                }).map(RecipeProjection::new);
     }
 
     Flux<RecipeProjection> getRecipesPaged(String name, RecipeCategory category, String search, int page, int size) {
@@ -76,18 +86,21 @@ class RecipeService {
     }
 
     public Mono<RecipeProjection> updateRecipe(String id, RecipeProjection recipe, String name) {
-        return recipeRepository.findById(id)
-                .filter(recipe1 -> recipe1.getCreatorId().equals(name))
-                .map(recipe1 -> {
-                    recipe1.setTitle(recipe.getTitle());
-                    recipe1.setDescription(recipe.getDescription());
-                    recipe1.setIngredients(recipe.getIngredients());
-                    recipe1.setDirections(recipe.getDirections());
-                    recipe1.setCategories(recipe.getCategories());
-                    recipe1.setImageUri(recipe.getImageUri());
-                    return recipe1;
-                })
-                .flatMap(recipeRepository::save)
+        return userService.getUser(name)
+                .flatMap(userData ->
+                        recipeRepository.findById(id)
+                                .filter(recipe1 -> recipe1.getCreatorId().equals(name))
+                                .map(recipe1 -> {
+                                    recipe1.setTitle(Optional.ofNullable(recipe.getTitle()).orElse(recipe1.getTitle()));
+                                    recipe1.setDescription(Optional.ofNullable(recipe.getDescription()).orElse(recipe1.getDescription()));
+                                    recipe1.setIngredients(Optional.ofNullable(recipe.getIngredients()).orElse(recipe1.getIngredients()));
+                                    recipe1.setDirections(Optional.ofNullable(recipe.getDirections()).orElse(recipe1.getDirections()));
+                                    recipe1.setCategories(Optional.ofNullable(recipe.getCategories()).orElse(recipe1.getCategories()));
+                                    recipe1.setImageUri(Optional.ofNullable(recipe.getImageUri()).orElse(recipe1.getImageUri()));
+                                    var isUserBaned = Optional.ofNullable(userData.getBanned()).orElse(LocalDateTime.now()).isAfter(LocalDateTime.now());
+                                    if(!isUserBaned) recipe1.setShared(Optional.ofNullable(recipe.getShared()).orElse(userData.getAutoShare()));
+                                    return recipe1;
+                                }).flatMap(recipeRepository::save))
                 .map(RecipeProjection::new);
     }
 

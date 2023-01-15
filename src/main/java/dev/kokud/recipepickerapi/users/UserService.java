@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-class UserService {
+public class UserService {
     private final UserRepository userRepository;
     private final String serverUrl;
 

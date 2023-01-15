@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
-class UserProjection {
+public class UserProjection {
     @Nullable
     @Email(message = "Email should be valid")
     private String email;
