@@ -1,5 +1,5 @@
 recipepicker:
-  server_url: ${RECIPEPICKER_DOMAIN}
+  server_url: ${RECIPEPICKER_DOMAIN:https://kokud.dev/}
 
 spring:
   data:
