@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-class FavoriteService {
+public class FavoriteService {
 
     private final FavoriteRecipeRepository favoriteRecipeRepository;
 
@@ -17,7 +17,7 @@ class FavoriteService {
                 .switchIfEmpty(favoriteRecipeRepository.insert(new Favorite(null, id, name)).thenReturn(true));
     }
 
-    public Flux<String> getFavoriteRecipes(String s) {
-        return favoriteRecipeRepository.findByUserId(s).map(Favorite::getRecipeId);
+    public Flux<FavoriteProjection> getFavoriteRecipes(String s) {
+        return favoriteRecipeRepository.findByUserId(s).map(FavoriteProjection::new);
     }
 }

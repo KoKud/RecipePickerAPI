@@ -16,13 +16,13 @@ class FavoriteController {
     private final FavoriteService favoriteService;
 
     @PostMapping("{id}")
-    Mono<?> changeFavoriteStatusForRecipe(@PathVariable String id) {
+    Mono<Boolean> changeFavoriteStatusForRecipe(@PathVariable String id) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMap(name -> favoriteService.updateFavoriteStatusForRecipe(id, name));
     }
 
     @GetMapping
-    Flux<?> getFavoriteRecipes() {
+    Flux<FavoriteProjection> getFavoriteRecipes() {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMapMany(favoriteService::getFavoriteRecipes);
     }

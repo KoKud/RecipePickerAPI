@@ -1,7 +1,6 @@
 package dev.kokud.recipepickerapi.files;
 
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.gridfs.ReactiveGridFsTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
@@ -17,11 +16,12 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @RequiredArgsConstructor
 class FileController {
     private final ReactiveGridFsTemplate gridFsTemplate;
+    private final String serverUrl;
 
     @PostMapping(value = "/upload-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<String> handleFileUpload(@RequestPart("file") FilePart file) {
         return gridFsTemplate.store(file.content(), file.filename())
-                .map(ObjectId::toHexString);
+                .map(objectId -> serverUrl + "file/" + objectId);
     }
 
     @GetMapping("/file/{id}")

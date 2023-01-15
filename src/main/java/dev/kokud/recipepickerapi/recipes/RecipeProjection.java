@@ -1,17 +1,16 @@
 package dev.kokud.recipepickerapi.recipes;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
 class RecipeProjection {
     @Null
     private String id;
-    @NotBlank(message = "Title is required")
     private String title;
     private String description;
     private String creatorId;
@@ -19,6 +18,7 @@ class RecipeProjection {
     private List<String> directions;
     private List<RecipeCategory> categories;
     private String imageUri;
+    private Boolean shared;
 
     public RecipeProjection(Recipe recipe) {
         this.id = recipe.getId();
@@ -29,6 +29,7 @@ class RecipeProjection {
         this.directions = recipe.getDirections();
         this.categories = recipe.getCategories();
         this.imageUri = recipe.getImageUri();
+        this.shared = recipe.getShared();
     }
 
     public Recipe toRecipe(){
@@ -41,7 +42,7 @@ class RecipeProjection {
                 directions,
                 categories,
                 imageUri,
-                false,
+                Optional.ofNullable(shared).orElse(false),
                 false
         );
     }

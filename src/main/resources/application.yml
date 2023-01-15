@@ -1,3 +1,6 @@
+recipepicker:
+  server_url: ${RECIPEPICKER_DOMAIN}
+
 spring:
   data:
     mongodb:
