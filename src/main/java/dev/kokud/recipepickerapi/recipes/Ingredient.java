@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 class Ingredient {
     private String id;
     private String name;
-    private Integer amount;
+    private Double amount;
     private IngredientCategory type;
     private Boolean optional;
 }
