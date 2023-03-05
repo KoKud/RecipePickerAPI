@@ -127,6 +127,7 @@ class RecipeService {
                                 if (recipeIngredients == null) return true;
                                 for (var recipeIngredient : recipeIngredients) {
                                     var ownedIngredient = ownedIngredients.get(recipeIngredient.getId());
+                                    if(Boolean.TRUE.equals(recipeIngredient.getOptional())) continue;
                                     if (ownedIngredient == null) return false;
                                     if (ownedIngredient < recipeIngredient.getAmount()) return false;
                                 }

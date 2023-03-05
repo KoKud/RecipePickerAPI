@@ -3,8 +3,8 @@ package dev.kokud.recipepickerapi.ingredients;
 import dev.kokud.recipepickerapi.ingredients.owned.OwnedIngredientProjection;
 import dev.kokud.recipepickerapi.ingredients.owned.OwnedIngredientService;
 import lombok.RequiredArgsConstructor;
-import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -29,7 +29,7 @@ class IngredientService {
                 .map(IngredientProjection::new);
     }
 
-    public Publisher<IngredientProjection> getIngredientsPaged(String name, IngredientCategory category, String search, int page, int size) {
+    public Flux<IngredientProjection> getIngredientsPaged(String name, IngredientCategory category, String search, int page, int size) {
         if(category == IngredientCategory.OWNED) return ownedIngredientService.getOwnedIngredients(name)
                 .map(OwnedIngredientProjection::getIngredientId)
                 .skip((long) page * size).take(size)
