@@ -1,0 +1,17 @@
+services:
+  mongo-database:
+    image: mongo:latest
+    env_file:
+      - ./env/mongo.env
+    volumes:
+      - mongo-recipe-picker-api-db:/data/db
+  backend:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./env/backend.env
+    depends_on:
+      - mongo-database
+volumes:
+  mongo-recipe-picker-api-db:
