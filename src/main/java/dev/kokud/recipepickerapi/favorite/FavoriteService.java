@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.recipes.favorite;
+package dev.kokud.recipepickerapi.favorite;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

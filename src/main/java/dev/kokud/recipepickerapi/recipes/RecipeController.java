@@ -1,5 +1,6 @@
 package dev.kokud.recipepickerapi.recipes;
 
+import dev.kokud.recipepickerapi.recipes.dto.RecipeDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,13 +21,13 @@ class RecipeController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    Mono<RecipeProjection> createRecipe(@RequestBody @Valid RecipeProjection recipe) {
+    Mono<RecipeDto> createRecipe(@RequestBody @Valid RecipeDto recipe) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMap(name -> recipeService.createRecipe(recipe, name));
     }
 
     @PutMapping("{id}")
-    Mono<RecipeProjection> updateRecipe(@PathVariable String id, @RequestBody @Valid RecipeProjection recipe) {
+    Mono<RecipeDto> updateRecipe(@PathVariable String id, @RequestBody @Valid RecipeDto recipe) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMap(name -> recipeService.updateRecipe(id, recipe, name));
     }
@@ -39,7 +40,7 @@ class RecipeController {
     }
 
     @GetMapping
-    Flux<RecipeProjection> getPagedRecipes(
+    Flux<RecipeDto> getPagedRecipes(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "ALL") RecipeCategory category,
@@ -49,18 +50,18 @@ class RecipeController {
     }
 
     @GetMapping("{id}")
-    Mono<RecipeProjection> getRecipesById(@PathVariable("id") String recipeId) {
+    Mono<RecipeDto> getRecipesById(@PathVariable("id") String recipeId) {
         return recipeService.getRecipeById(recipeId);
     }
 
     @GetMapping("ingredient/{id}")
-    Flux<RecipeProjection> getPagedRecipesByIngredientId(@PathVariable("id") String ingredientId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "ALL") RecipeCategory category) {
+    Flux<RecipeDto> getPagedRecipesByIngredientId(@PathVariable("id") String ingredientId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "ALL") RecipeCategory category) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
         return user.map(Principal::getName).flatMapMany(name -> recipeService.getRecipesPagedByIngredientId(name, ingredientId, category, page, size));
     }
 
     @GetMapping("myRecipes")
-    Flux<RecipeProjection> getMyRecipesPaged(
+    Flux<RecipeDto> getMyRecipesPaged(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "ALL") RecipeCategory category,
@@ -70,7 +71,7 @@ class RecipeController {
     }
 
     @GetMapping("/owned")
-    Flux<RecipeProjection> getOwnedRecipesPaged(
+    Flux<RecipeDto> getOwnedRecipesPaged(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "ALL") RecipeCategory category) {

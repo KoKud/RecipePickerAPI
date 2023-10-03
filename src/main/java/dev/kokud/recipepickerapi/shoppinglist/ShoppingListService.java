@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.ingredients.shoppinglist;
+package dev.kokud.recipepickerapi.shoppinglist;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

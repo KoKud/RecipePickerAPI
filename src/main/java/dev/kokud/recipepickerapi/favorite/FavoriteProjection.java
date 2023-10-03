@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.recipes.favorite;
+package dev.kokud.recipepickerapi.favorite;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FavoriteProjection {
     private String recipeId;
-    public FavoriteProjection(Favorite favorite) {
+    FavoriteProjection(Favorite favorite) {
         this.recipeId = favorite.getRecipeId();
     }
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-class IngredientProjection {
+public class IngredientDto {
     @Null
     private String id;
     @NotBlank(message = "Name is required")
@@ -18,7 +18,10 @@ class IngredientProjection {
     private List<IngredientCategory> categories;
     private String imageUri;
 
-    public IngredientProjection(Ingredient ingredient) {
+    public IngredientDto(String name){
+        this.name = name;
+    }
+    IngredientDto(Ingredient ingredient) {
         this.id = ingredient.getId();
         this.name = ingredient.getName().substring(0, 1).toUpperCase() + ingredient.getName().substring(1);
         this.description = ingredient.getDescription();
@@ -26,7 +29,7 @@ class IngredientProjection {
         this.imageUri = ingredient.getImageUri();
     }
 
-    public Ingredient toIngredient(){
+    Ingredient toIngredient(){
         return new Ingredient(
                 null,
                 name.toLowerCase(),

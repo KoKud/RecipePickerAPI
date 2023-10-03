@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.ingredients.owned;
+package dev.kokud.recipepickerapi.ownedingredients;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -12,13 +12,13 @@ public class OwnedIngredientProjection {
     private double amount;
     private IngredientCategory type;
 
-    public OwnedIngredientProjection(OwnedIngredient ownedIngredient) {
+    OwnedIngredientProjection(OwnedIngredient ownedIngredient) {
         this.ingredientId = ownedIngredient.getIngredientId();
         this.amount = ownedIngredient.getAmount();
         this.type = ownedIngredient.getType();
     }
 
-    public OwnedIngredient toOwnedIngredient(String userId) {
+    OwnedIngredient toOwnedIngredient(String userId) {
         return new OwnedIngredient(null, userId, ingredientId, amount, type);
     }
 }

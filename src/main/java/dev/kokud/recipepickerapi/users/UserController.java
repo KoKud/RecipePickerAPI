@@ -1,5 +1,6 @@
 package dev.kokud.recipepickerapi.users;
 
+import dev.kokud.recipepickerapi.users.dto.UserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -13,23 +14,23 @@ import java.security.Principal;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 class UserController {
-    private final UserService userService;
+    private final UserFacade userFacade;
 
     @PostMapping("/register")
-    Mono<UserProjection> registerUser(@RequestBody @Valid UserProjection user) {
+    Mono<UserDto> registerUser(@RequestBody @Valid UserDto user) {
         var loggedUser = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
-        return loggedUser.map(Principal::getName).flatMap(id -> userService.registerUser(id, user));
+        return loggedUser.map(Principal::getName).flatMap(id -> userFacade.registerUser(id, user));
     }
 
     @PutMapping("/me")
-    Mono<UserProjection> updateUser(@RequestBody @Valid UserProjection user) {
+    Mono<UserDto> updateUser(@RequestBody @Valid UserDto user) {
         var loggedUser = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
-        return loggedUser.map(Principal::getName).flatMap(id -> userService.updateUser(id, user));
+        return loggedUser.map(Principal::getName).flatMap(id -> userFacade.updateUser(id, user));
     }
 
     @GetMapping("/me")
-    Mono<UserProjection> getLoggedUser() {
+    Mono<UserDto> getLoggedUser() {
         var loggedUser = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
-        return loggedUser.map(Principal::getName).flatMap(userService::getUser);
+        return loggedUser.map(Principal::getName).flatMap(userFacade::getUser);
     }
 }

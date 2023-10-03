@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.ingredients.shoppinglist;
+package dev.kokud.recipepickerapi.shoppinglist;
 
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;

@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.ingredients.owned;
+package dev.kokud.recipepickerapi.ownedingredients;
 
 public enum IngredientCategory {
     G,

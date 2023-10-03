@@ -19,13 +19,16 @@ class IngredientController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    Mono<IngredientProjection> createIngredient(@RequestBody @Valid IngredientProjection ingredient) {
+    Mono<IngredientDto> createIngredient(@RequestBody @Valid IngredientDto ingredient) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
-        return user.map(Principal::getName).flatMap(name -> ingredientService.createIngredient(ingredient, name));
+        return user.map(Principal::getName).flatMap(name -> ingredientService.createIngredient(ingredient, name)).map(id -> {
+            ingredient.setId(id);
+            return ingredient;
+        });
     }
 
     @GetMapping
-    Flux<IngredientProjection> getPagedIngredients(
+    Flux<IngredientDto> getPagedIngredients(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "ALL") IngredientCategory category,
@@ -35,7 +38,7 @@ class IngredientController {
     }
 
     @GetMapping("{id}")
-    Mono<IngredientProjection> getIngredientById(@PathVariable("id") String ingredientId) {
+    Mono<IngredientDto> getIngredientById(@PathVariable("id") String ingredientId) {
         return ingredientService.getIngredientById(ingredientId);
     }
 }

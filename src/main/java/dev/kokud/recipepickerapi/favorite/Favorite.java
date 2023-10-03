@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.recipes.favorite;
+package dev.kokud.recipepickerapi.favorite;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

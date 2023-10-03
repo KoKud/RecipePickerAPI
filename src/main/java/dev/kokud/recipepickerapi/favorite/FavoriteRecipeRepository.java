@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.recipes.favorite;
+package dev.kokud.recipepickerapi.favorite;
 
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;

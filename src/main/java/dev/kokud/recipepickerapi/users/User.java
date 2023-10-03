@@ -1,5 +1,6 @@
 package dev.kokud.recipepickerapi.users;
 
+import dev.kokud.recipepickerapi.users.dto.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,4 +20,14 @@ class User {
     private String imageUrl;   //used for Google account image
     private LocalDateTime banned;
     private Boolean autoShare;
+
+    UserDto toDto(String serverUrl){
+        return UserDto.builder()
+                .withEmail(email)
+                .withUsername(username)
+                .withImageUrl(imageUri != null ? serverUrl + "file/" + imageUri : imageUrl)
+                .withBanned(banned)
+                .withAutoShare(autoShare)
+                .build();
+    }
 }

@@ -1,9 +1,12 @@
 package dev.kokud.recipepickerapi.recipes;
 
-import dev.kokud.recipepickerapi.ingredients.owned.OwnedIngredientService;
-import dev.kokud.recipepickerapi.recipes.favorite.FavoriteProjection;
-import dev.kokud.recipepickerapi.recipes.favorite.FavoriteService;
-import dev.kokud.recipepickerapi.users.UserService;
+import dev.kokud.recipepickerapi.favorite.FavoriteProjection;
+import dev.kokud.recipepickerapi.favorite.FavoriteService;
+import dev.kokud.recipepickerapi.ingredients.IngredientDto;
+import dev.kokud.recipepickerapi.ingredients.IngredientService;
+import dev.kokud.recipepickerapi.ownedingredients.OwnedIngredientService;
+import dev.kokud.recipepickerapi.recipes.dto.RecipeDto;
+import dev.kokud.recipepickerapi.users.UserFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -21,90 +24,111 @@ class RecipeService {
     private final RecipeRepository recipeRepository;
     private final FavoriteService favoriteService;
     private final OwnedIngredientService ownedIngredientService;
-    private final UserService userService;
+    private final UserFacade userFacade;
+    private final RecipeFactory recipeFactory;
+    private final IngredientService ingredientService;
+    private final RecipeIngredientFactory recipeIngredientFactory;
 
-    Mono<RecipeProjection> createRecipe(RecipeProjection recipeProjection, String user) {
-        var recipe = recipeProjection.toRecipe();
-
-        return userService.getUser(user)
+    Mono<RecipeDto> createRecipe(RecipeDto recipeDto, String user) {
+        return userFacade.getUser(user)
                 .map(userData ->
                         !Optional.ofNullable(userData.getBanned()).orElse(LocalDateTime.now()).isAfter(LocalDateTime.now())
                                 && userData.getAutoShare())
-                .flatMap(autoShare -> {
+                .map(autoShare -> {
+                    var recipe = recipeFactory.convertDto(recipeDto);
                     recipe.setCreatorId(user);
                     recipe.setShared(autoShare);
-                    return recipeRepository.insert(recipe);
-                }).map(RecipeProjection::new);
+                    return recipe;})
+                .publishOn(Schedulers.boundedElastic())
+                .map(recipe -> {
+                    recipe.getIngredients().forEach(ingredient -> {
+                        var ingredientId = ingredientService.createIngredient(new IngredientDto(ingredient.getName()), user).block();
+                        ingredient.setId(ingredientId);
+                    });
+                    return recipe;})
+                .flatMap(recipeRepository::save).map(Recipe::toDto);
     }
 
-    Flux<RecipeProjection> getRecipesPaged(String name, RecipeCategory category, String search, int page, int size) {
+    Flux<RecipeDto> getRecipesPaged(String name, RecipeCategory category, String search, int page,
+                                    int size) {
         if (category == RecipeCategory.FAVOURITE) return favoriteService.getFavoriteRecipes(name)
                 .map(FavoriteProjection::getRecipeId)
                 .skip((long) page * size).take(size)
                 .collectList().flatMapMany(recipeRepository::findByIdIn)
                 .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
-                .map(RecipeProjection::new);
+                .map(Recipe::toDto);
 
         return recipeRepository.findAll(name)
                 .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(List.of()).contains(category))
                 .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
-                .skip((long) page * size).take(size).map(RecipeProjection::new);
+                .skip((long) page * size).take(size).map(Recipe::toDto);
 
     }
 
-    Flux<RecipeProjection> getMyRecipesPaged(String name, RecipeCategory category, String search, int page, int size) {
+    Flux<RecipeDto> getMyRecipesPaged(String name, RecipeCategory category, String search, int page, int size) {
         if (category == RecipeCategory.FAVOURITE) return favoriteService.getFavoriteRecipes(name)
                 .map(FavoriteProjection::getRecipeId).collectList()
                 .flatMapMany(recipeId -> recipeRepository.findByIdInAndCreatorId(recipeId, name))
                 .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
-                .skip((long) page * size).take(size).map(RecipeProjection::new);
+                .skip((long) page * size).take(size).map(Recipe::toDto);
 
         return recipeRepository.findByCreatorId(name)
                 .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(List.of()).contains(category))
                 .filter(recipe -> recipe.getTitle().toLowerCase().contains(search.toLowerCase()))
-                .skip((long) page * size).take(size).map(RecipeProjection::new);
+                .skip((long) page * size).take(size).map(Recipe::toDto);
     }
 
-    Flux<RecipeProjection> getRecipesPagedByIngredientId(String name, String ingredientId, RecipeCategory category, int page, int size) {
+    Flux<RecipeDto> getRecipesPagedByIngredientId(String name, String ingredientId, RecipeCategory category,
+                                                  int page, int size) {
         if (category == RecipeCategory.FAVOURITE) return favoriteService.getFavoriteRecipes(name)
                 .map(FavoriteProjection::getRecipeId).collectList()
                 .flatMapMany(recipeIds -> recipeRepository.findByIdInAndIngredientsId(recipeIds, ingredientId))
-                .skip((long) page * size).take(size).map(RecipeProjection::new);
+                .skip((long) page * size).take(size).map(Recipe::toDto);
 
         return recipeRepository.findByIngredientsId(name, ingredientId)
                 .filter(recipe -> category == RecipeCategory.ALL || Optional.ofNullable(recipe.getCategories()).orElse(List.of()).contains(category))
-                .skip((long) page * size).take(size).map(RecipeProjection::new);
+                .skip((long) page * size).take(size).map(Recipe::toDto);
     }
 
-    Mono<RecipeProjection> getRecipeById(String recipeId) {
+    Mono<RecipeDto> getRecipeById(String recipeId) {
         return recipeRepository.findById(recipeId)
-                .map(RecipeProjection::new);
+                .map(Recipe::toDto);
     }
 
     Mono<Void> deleteRecipe(String name, String id) {
         return recipeRepository.findById(id).filter(recipe -> recipe.getCreatorId().equals(name)).flatMap(recipeRepository::delete);
     }
 
-    public Mono<RecipeProjection> updateRecipe(String id, RecipeProjection recipe, String name) {
-        return userService.getUser(name)
+    public Mono<RecipeDto> updateRecipe(String id, RecipeDto recipe, String name) {
+        return userFacade.getUser(name)
                 .flatMap(userData ->
                         recipeRepository.findById(id)
                                 .filter(recipe1 -> recipe1.getCreatorId().equals(name))
                                 .map(recipe1 -> {
                                     recipe1.setTitle(Optional.ofNullable(recipe.getTitle()).orElse(recipe1.getTitle()));
                                     recipe1.setDescription(Optional.ofNullable(recipe.getDescription()).orElse(recipe1.getDescription()));
-                                    recipe1.setIngredients(Optional.ofNullable(recipe.getIngredients()).orElse(recipe1.getIngredients()));
+
+                                    var newIngredients = recipe.getIngredients().stream().map(ingredient -> {
+                                        var ingredientId = ingredientService.createIngredient(new IngredientDto(ingredient.getName()), name).block();
+                                        return recipeIngredientFactory.from(ingredient, ingredientId);
+                                    }).toList();
+
+                                    recipe1.setIngredients(newIngredients.isEmpty() ? recipe1.getIngredients() : newIngredients);
                                     recipe1.setDirections(Optional.ofNullable(recipe.getDirections()).orElse(recipe1.getDirections()));
-                                    recipe1.setCategories(Optional.ofNullable(recipe.getCategories()).orElse(recipe1.getCategories()));
+
+                                    var newCategories = recipe.getCategories().stream().map(RecipeCategory::valueOf).toList();
+
+                                    recipe1.setCategories(newCategories.isEmpty() ? recipe1.getCategories() : newCategories);
                                     recipe1.setImageUri(Optional.ofNullable(recipe.getImageUri()).orElse(recipe1.getImageUri()));
                                     var isUserBaned = Optional.ofNullable(userData.getBanned()).orElse(LocalDateTime.now()).isAfter(LocalDateTime.now());
-                                    if(!isUserBaned) recipe1.setShared(Optional.ofNullable(recipe.getShared()).orElse(userData.getAutoShare()));
+                                    if (!isUserBaned)
+                                        recipe1.setShared(Optional.ofNullable(recipe.getShared()).orElse(userData.getAutoShare()));
                                     return recipe1;
                                 }).flatMap(recipeRepository::save))
-                .map(RecipeProjection::new);
+                .map(Recipe::toDto);
     }
 
-    public Flux<RecipeProjection> getOwnedRecipesPaged(String name, RecipeCategory category, int page, int size) {
+    public Flux<RecipeDto> getOwnedRecipesPaged(String name, RecipeCategory category, int page, int size) {
         return ownedIngredientService.getOwnedIngredients(name)
                 .map(ownedIngredient ->
                         Map.entry(ownedIngredient.getIngredientId(), switch (ownedIngredient.getType()) {
@@ -127,7 +151,7 @@ class RecipeService {
                                 if (recipeIngredients == null) return true;
                                 for (var recipeIngredient : recipeIngredients) {
                                     var ownedIngredient = ownedIngredients.get(recipeIngredient.getId());
-                                    if(Boolean.TRUE.equals(recipeIngredient.getOptional())) continue;
+                                    if (Boolean.TRUE.equals(recipeIngredient.getOptional())) continue;
                                     if (ownedIngredient == null) return false;
                                     if (ownedIngredient < recipeIngredient.getAmount()) return false;
                                 }
@@ -137,6 +161,6 @@ class RecipeService {
                 })
                 .filter(recipe -> category == RecipeCategory.ALL || category == RecipeCategory.FAVOURITE || Optional.ofNullable(recipe.getCategories()).orElse(List.of()).contains(category))
                 .skip((long) page * size).take(size)
-                .map(RecipeProjection::new);
+                .map(Recipe::toDto);
     }
 }

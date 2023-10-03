@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.ingredients.shoppinglist;
+package dev.kokud.recipepickerapi.favorite;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -10,20 +10,20 @@ import reactor.core.publisher.Mono;
 import java.security.Principal;
 
 @RestController
-@RequestMapping("/shopping-list")
+@RequestMapping("/favorites/recipes")
 @RequiredArgsConstructor
-class ShoppingListController {
-    private final ShoppingListService shoppingListService;
+class FavoriteController {
+    private final FavoriteService favoriteService;
 
-    @PostMapping("{ingredientId}")
-    Mono<Boolean> modifyShoppingList(@PathVariable String ingredientId) {
+    @PostMapping("{id}")
+    Mono<Boolean> changeFavoriteStatusForRecipe(@PathVariable String id) {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
-        return user.map(Principal::getName).flatMap(name -> shoppingListService.modifyShoppingList(ingredientId, name));
+        return user.map(Principal::getName).flatMap(name -> favoriteService.updateFavoriteStatusForRecipe(id, name));
     }
 
     @GetMapping
-    Flux<ShoppingListProjection> getShoppingList() {
+    Flux<FavoriteProjection> getFavoriteRecipes() {
         var user = ReactiveSecurityContextHolder.getContext().map(SecurityContext::getAuthentication);
-        return user.map(Principal::getName).flatMapMany(shoppingListService::getShoppingList);
+        return user.map(Principal::getName).flatMapMany(favoriteService::getFavoriteRecipes);
     }
 }

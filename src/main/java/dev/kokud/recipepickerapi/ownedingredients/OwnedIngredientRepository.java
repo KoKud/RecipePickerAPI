@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.ingredients.owned;
+package dev.kokud.recipepickerapi.ownedingredients;
 
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;

@@ -1,28 +1,30 @@
 package dev.kokud.recipepickerapi.users;
 
+import dev.kokud.recipepickerapi.users.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserFacade {
     private final UserRepository userRepository;
     private final String serverUrl;
+    private final UserFactory userFactory;
 
-    public Mono<UserProjection> registerUser(String id, UserProjection user) {
+    public Mono<UserDto> registerUser(String id, UserDto user) {
         return userRepository.findById(id)
-                .switchIfEmpty(userRepository.insert(user.toUser(id)))
-                .map(userData -> new UserProjection(userData, serverUrl));
+                .switchIfEmpty(userRepository.insert(userFactory.from(user, id)))
+                .map(userData -> userData.toDto(serverUrl));
     }
 
-    public Mono<UserProjection> getUser(String id) {
-        return userRepository.findById(id).map(userData -> new UserProjection(userData, serverUrl));
+    public Mono<UserDto> getUser(String id) {
+        return userRepository.findById(id).map(userData -> userData.toDto(serverUrl));
     }
 
-    public Mono<UserProjection> updateUser(String id, UserProjection user) {
+    public Mono<UserDto> updateUser(String id, UserDto user) {
         return userRepository.findById(id)
-                .switchIfEmpty(userRepository.insert(user.toUser(id)))
+                .switchIfEmpty(userRepository.insert(userFactory.from(user, id)))
                 .map(userData ->{
                     if(user.getUsername() != null) userData.setUsername(user.getUsername());
                     if(user.getEmail() != null) userData.setEmail(user.getEmail());
@@ -31,6 +33,6 @@ public class UserService {
                     return userData;
                 })
                 .flatMap(userRepository::save)
-                .map(userData -> new UserProjection(userData, serverUrl));
+                .map(userData -> userData.toDto(serverUrl));
     }
 }

@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.ingredients.owned;
+package dev.kokud.recipepickerapi.ownedingredients;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

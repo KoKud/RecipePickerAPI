@@ -1,4 +1,4 @@
-package dev.kokud.recipepickerapi.ingredients.owned;
+package dev.kokud.recipepickerapi.ownedingredients;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
